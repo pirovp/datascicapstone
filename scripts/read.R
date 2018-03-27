@@ -8,13 +8,16 @@ encorp <- c(
 
 source("scripts/fsample.R")
 
-sblogs <- fsample(encorp[1], n = 1000L, seed = 2000)
-snews <- fsample(encorp[2], n = 1000L, seed = 2000)
-stwitter <- fsample(encorp[3], n = 1000L, seed = 2000)
+blogs <- fsample(encorp[1], n = 1000L, seed = 2000)
+news <- fsample(encorp[2], n = 1000L, seed = 2000)
+twitter <- fsample(encorp[3], n = 1000L, seed = 2000)
 
-save(sblogs, snews, stwitter, file = "data/smallsample.Rdata")
+save(blogs, news, twitter, file = "data/smallsample.Rdata")
+rm(blogs, news, twitter)
+
 
 # read full files
+
 qread <- function(fname) {
       con <- file(fname, open = "r")
       x <- readLines(con, skipNul = TRUE)
