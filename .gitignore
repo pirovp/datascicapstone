@@ -2,5 +2,5 @@
 .Rhistory
 .RData
 .Ruserdata
-knowledge/*
+# knowledge/*
 data/*
