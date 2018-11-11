@@ -24,5 +24,3 @@ save (tblogs, tnews, ttwitter, file = "data/tokensQ2.Rdata")
 dblogs <- dfm(tblogs)
 dnews <- dfm(tnews)
 dtwitter <- dfm(ttwitter)
-
-# Cleaning and preprocessing
