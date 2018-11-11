@@ -1,0 +1,16 @@
+---
+title: "Exploratory analysis"
+author: "Paolo Pirovano"
+date: "27 March 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Load data, basic analysis
+
+# Tokenise
+
+# Tokens statistics (1-gram, n-gram)
