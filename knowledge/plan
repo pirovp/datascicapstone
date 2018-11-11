@@ -1,3 +1,7 @@
+corpora:
+      -what's there
+      -other modern english (consider topic + register)
+
 clean-up:
       -punctuation
       -emojis, urls
@@ -5,6 +9,7 @@ clean-up:
       -numbers
       
       -stemming
+      -dictionaries
       
 exploratory analysis:
       Tasks to accomplish
