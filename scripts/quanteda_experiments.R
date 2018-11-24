@@ -5,7 +5,7 @@ x <- kwic(twitter, "happy") %>%
 tibble::as.tibble(x)
 x <- dfm(twitter, remove = stopwords())
 xx <- head(x, n = 10, nf = 10)
-dicky <- dictionary(list(uno = c("Monday", "Tuesday"),
+dicky <- dictionary(list(uno = c("Monday", "Tuesday")))
 y <- dfm_lookup(x, dicky)
 head(y)
 z <- dfm_select(x, dicky)
@@ -21,8 +21,8 @@ tokens_ngrams(x, n = 1:3)
 tokens_skipgrams(x, n = 2, skip = 0:1)
 tokens_wordstem(x)
 
-x <- tokens(twitter, remove_punct = TRUE)
-textstat_collocations(x, size = 4, min_count = 3)
+x <- tokens(ctwitter, remove_punct = TRUE)
+textstat_collocations(x, size = 3, min_count = 3)
 textstat_readability(twitter, measure = "Flesch")
 
 x <- dfm(twitter, remove = stopwords())

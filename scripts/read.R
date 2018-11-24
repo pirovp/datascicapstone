@@ -8,9 +8,9 @@ encorp <- c(
 
 source("scripts/fsample.R")
 
-blogs <- fsample(encorp[1], n = 1000L, seed = 2000)
-news <- fsample(encorp[2], n = 1000L, seed = 2000)
-twitter <- fsample(encorp[3], n = 1000L, seed = 2000)
+blogs <- fsample(encorp[1], n = 10000L, seed = 2000)
+news <- fsample(encorp[2], n = 10000L, seed = 2000)
+twitter <- fsample(encorp[3], n = 10000L, seed = 2000)
 
 save(blogs, news, twitter, file = "data/smallsample.Rdata")
 rm(blogs, news, twitter)
