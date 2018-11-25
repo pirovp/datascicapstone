@@ -45,7 +45,7 @@ setMethod(f="predict",
           }
 )
 
-model1 <- langmodel(freq_list)
+model1 <- langmodel(freq_list=freq_list)
 
 predict(model1, ngram_in)
 
@@ -53,8 +53,13 @@ predict(model1, ngram_in)
 matchTopnGrams <- function (freq_table, ngram, n, maxpredictions=5) {
       # cut ngram to n-1 length
       if (n==1) return(mutate(freq_list[[1]], pred_word=feature, n=n)[1:5,])
+      
       ngram <- paste(tail(unlist(strsplit(ngram, "_")),(n-1)), collapse = "_")
+      
       matches <- freq_list[[n]][grep(paste0("^", ngram, "_"), freq_list[[n]]$feature), ] %>%
             mutate(pred_word=sub(".*_", "", feature), n=n)
+      
+      if (nrow(matches)==0) return(data.frame())
+      
       return(matches[1:min(c(maxpredictions, nrow(matches))),])
 }
