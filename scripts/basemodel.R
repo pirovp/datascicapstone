@@ -1,4 +1,6 @@
 load("data/smallsample.Rdata")
+library(quanteda)
+library(dplyr)
 merged_corpus <- corpus(c(blogs, news, twitter))
 
 # prepare frequency tables
@@ -21,11 +23,27 @@ generateDfms <- function(corpus, ngrams = 1:6) {
       )
 }
 
-freq_list <- purrr::map(dfm_list, textstat_frequency)
+# match (n+1)grams that start with pattern
+matchTopnGrams <- function (freq_table, ngram, n, maxpredictions=5) {
+      # cut ngram to n-1 length
+      if (n==1) return(mutate(freq_list[[1]], pred_word=feature, n=n)[1:5,])
+      
+      ngram <- paste(tail(unlist(strsplit(ngram, "_")),(n-1)), collapse = "_")
+      
+      matches <- freq_list[[n]][grep(paste0("^", ngram, "_"), freq_list[[n]]$feature), ] %>%
+            mutate(pred_word=sub(".*_", "", feature), n=n)
+      
+      if (nrow(matches)==0) return(data.frame())
+      
+      return(matches[1:min(c(maxpredictions, nrow(matches))),])
+}
+
+
 
 # base prediction algorithm
 setClass("langmodel", representation(freq_list = "list"))
 
+# predicts next word given input sentence
 setMethod(f="predict",
           signature="langmodel",
           definition=function(object, ngram = "")
@@ -45,21 +63,7 @@ setMethod(f="predict",
           }
 )
 
-model1 <- langmodel(freq_list=freq_list)
-
+#test model
+freq_list <- purrr::map(generateDfms(merged_corpus), textstat_frequency)
+model1 <- new("langmodel", freq_list=freq_list)
 predict(model1, ngram_in)
-
-# match (n+1)grams that start with pattern
-matchTopnGrams <- function (freq_table, ngram, n, maxpredictions=5) {
-      # cut ngram to n-1 length
-      if (n==1) return(mutate(freq_list[[1]], pred_word=feature, n=n)[1:5,])
-      
-      ngram <- paste(tail(unlist(strsplit(ngram, "_")),(n-1)), collapse = "_")
-      
-      matches <- freq_list[[n]][grep(paste0("^", ngram, "_"), freq_list[[n]]$feature), ] %>%
-            mutate(pred_word=sub(".*_", "", feature), n=n)
-      
-      if (nrow(matches)==0) return(data.frame())
-      
-      return(matches[1:min(c(maxpredictions, nrow(matches))),])
-}
