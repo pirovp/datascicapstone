@@ -41,7 +41,14 @@ matchTopnGrams <- function (freq_table, ngram, n, maxpredictions=5) {
 
 
 # base prediction algorithm
-setClass("langmodel", representation(freq_list = "list"))
+setClass(
+      "langmodel",
+      representation(
+            freq_list = "list",
+            max_n = "numeric",
+            unk_prob = "numeric"
+      )
+)
 
 # predicts next word given input sentence
 setMethod(f="predict",
@@ -64,6 +71,17 @@ setMethod(f="predict",
 )
 
 #test model
-freq_list <- purrr::map(generateDfms(merged_corpus), textstat_frequency)
-model1 <- new("langmodel", freq_list=freq_list)
+freq_list <- purrr::map(generateDfms(merged_corpus), 
+                        function(x) {textstat_frequency(x) %>%
+                        rename(count = frequency) %>%
+                        mutate(frequency = count / sum(count))}
+                        )
+
+model1 <-
+      new(
+            "langmodel",
+            freq_list = freq_list,
+            max_n = length(freq_list),
+            unk_prob = min(freq_list[[1]]$frequency)
+      )
 predict(model1, ngram_in)

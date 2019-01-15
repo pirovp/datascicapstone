@@ -1,8 +1,9 @@
 corp <- cblogs+cnews+ctwitter
 
 # stemming not useful; how to treat punctuation and case?
-cleanTokens <- function(corpus) {
-      n1grams <- tokens(corpus, 
+cleanTokens <- function(corpus, what="word") {
+      n1grams <- tokens(corpus,
+                        what = "word",
                      remove_numbers = TRUE, 
                      remove_punct = TRUE,
                      remove_symbols = TRUE,
