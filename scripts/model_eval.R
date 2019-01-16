@@ -7,7 +7,7 @@ corpusPerplexity <- function(corpus, lmodel) {
       # non normalised perplexity each sentence
       perplexities <- purrr::map_dfr(corpus, ~perplexity(lmodel, .))
       # normalise by taking nth root (n = total number of words)
-      perplexity <- prod(perplexities$perplexity)^(1/sum(perplexities$n))
+      perplexity <- mean(perplexities$perplexity)
       return(perplexities)
 }
 
@@ -26,7 +26,7 @@ setMethod(f="perplexity",
                                                                        tokens,
                                                                        position=.x)
                                                      )
-                perplexity=prod(token_probabilities)
+                perplexity=1/prod(token_probabilities)^(1/n)
                 return(tibble(perplexity=perplexity, n=n))
           }
 )
@@ -50,19 +50,38 @@ setMethod(f="tokenProbability",
                 # probability with stupid backoff
                 prob_list <- object@freq_list
                 unk_prob <- object@unk_prob
-                probability = stupidBackoff(ngram, prob_list, max_n, unk_prob)$frequency
+                # condition on n-1 ngram!
+                match_ngrams <- stupidBackoff(ngram, prob_list, max_n, unk_prob)
+                probability <- match_ngrams$frequency[1]/match_ngrams$frequency[2]
                 return(probability)
           }
 )
 
 stupidBackoff <- function(ngram, prob_list, max_n=3, unk_prob=0) {
       n <- min(max_n, length(ngram))
+
+      # match and return n-gram probability and n-1 gram to condition on
       for (i in n:1) {
             ngram <- tail(ngram, i)
             match <- filter(prob_list[[i]], feature==paste(ngram, collapse="_"))
-            if (nrow(match)>0) return(match)
+            if (nrow(match)>0) {
+                  #no n-1 gram if i==1
+                  if (i==1) {
+                        match[2,]$feature <- "1"
+                        match[2,]$frequency <- 1
+                        break
+                        }
+                  #n-1 gram
+                  subgram <- head(ngram, (i-1))
+                  match[2,] <- filter(prob_list[[i-1]],
+                                      feature==paste(subgram, collapse="_"))
+                  break
+            }
       }
+      
       # if no match, returning 0 probability will give 0 perplexity
       # unk_freq needs to be defined by the model
-      return(tibble(feature="<UNK>", frequency=unk_prob))
+      
+      if (nrow(match)>0) return(match)
+      else return(tibble(feature=c("<UNK>", "1"), frequency=c(unk_prob, 1)))
 }
