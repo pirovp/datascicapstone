@@ -42,7 +42,7 @@ setMethod(f="tokenProbability",
           signature="langmodel",
           definition=function(object, sentence="", position=1L) {
                 # tokenise input sentence if nencessary
-                if (class(sentence)!=tokens) sentence <- cleanTokens(sentence)
+                if (class(sentence)!="tokens") sentence <- cleanTokens(sentence)
                 
                 max_n <- object@max_n
                 ngram_start <- max(1, position-max_n+1)
@@ -83,5 +83,5 @@ stupidBackoff <- function(ngram, prob_list, max_n=3, unk_prob=0) {
       # unk_freq needs to be defined by the model
       
       if (nrow(match)>0) return(match)
-      else return(tibble(feature=c("<UNK>", "1"), frequency=c(unk_prob, 1)))
+      else return(tibble(feature=c("<UNK>", "1"), frequency=c(unk_prob[1], 1)))
 }
