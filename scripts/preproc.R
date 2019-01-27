@@ -1,5 +1,3 @@
-corp <- cblogs+cnews+ctwitter
-
 # stemming not useful; how to treat punctuation and case?
 cleanTokens <- function(corpus, what="word") {
       n1grams <- tokens(corpus,
@@ -15,8 +13,3 @@ cleanTokens <- function(corpus, what="word") {
             #Dr. Martin Porter's stemming algorithm
             #tokens_wordstem()
 }
-
-# ngrams and skipgrams
-n2grams <- tokens_ngrams(toks, n = 2L, skip = 0L)
-length(attributes(n1grams)$types)
-length(attributes(n2grams)$types)
