@@ -35,13 +35,22 @@ matchTopnGrams <- function (freq_table, ngram, n, maxpredictions=5) {
 
 #calculate probabilities of n-grams conditioned on n - 1 grams
 condProbabilities <- function(prob_list, unk_prob) {
-      purrr::map_dfr(2:length(prob_list),
+      # 1 gram is conditioned on nothing
+      cond_probs1 <- tibble(ngram_level=1,
+                            cond_probs=list(mutate(prob_list[[1]],
+                                                   conditioned_on="1",
+                                                   condprob=frequency))
+                            )
+      # 2 to n grams
+      cond_probs <- purrr::map_dfr(2:length(prob_list),
                      ~ tibble(ngram_level = .,
                               cond_probs = list(mutate(prob_list[[.]], 
                                                        conditioned_on = sub("_[^_]*$", "", feature),
                                                        condprob = frequency / subProbabilities(
                                                              feature, prob_list[[.-1]], unk_prob[. - 1]))
                               )))
+      
+      rbind(cond_probs1, cond_probs)
 }
 
 # find probabilities of n-1 grams (vectorised)
