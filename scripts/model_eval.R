@@ -31,7 +31,7 @@ setMethod(f="perplexity",
                                                                        tokens,
                                                                        position=.)
                                                      )
-                perplexity=1/prod(token_probabilities)^(1/n)
+                perplexity=1/prod(token_probabilities^(1/n))
                 return(tibble(perplexity=perplexity, n=n))
           }
 )
