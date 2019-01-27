@@ -1,8 +1,3 @@
-load("data/smallsample.Rdata")
-library(quanteda)
-library(dplyr)
-merged_corpus <- corpus(c(blogs, news, twitter))
-
 # prepare frequency tables
 generateDfms <- function(corpus, ngrams = 1:6) {
       dfm_list <- purrr::map(ngrams, ~dfm(
@@ -38,31 +33,23 @@ matchTopnGrams <- function (freq_table, ngram, n, maxpredictions=5) {
       return(matches[1:min(c(maxpredictions, nrow(matches))),])
 }
 
+#calculate probabilities of n-grams conditioned on n - 1 grams
+condProbabilities <- function(prob_list, unk_prob) {
+      purrr::map_dfr(2:length(prob_list),
+                     ~ tibble(ngram_level = .,
+                              cond_probs = list(mutate(prob_list[[.]], 
+                                                       conditioned_on = sub("_[^_]*$", "", feature),
+                                                       condprob = frequency / subProbabilities(
+                                                             feature, prob_list[[.-1]], unk_prob[. - 1]))
+                              )))
+}
 
-
-# base prediction algorithm
-setClass(
-      "langmodel",
-      representation(
-            freq_list = "list",
-            max_n = "numeric",
-            unk_prob = "numeric"
-      )
-)
-
-#test model
-freq_list <- purrr::map(generateDfms(merged_corpus), 
-                        function(x) {textstat_frequency(x) %>%
-                        rename(count = frequency) %>%
-                        mutate(frequency = count / sum(count))}
-                        )
-
-model1 <-
-      new(
-            "langmodel",
-            freq_list = flist2,
-            max_n = length(freq_list),
-            unk_prob = purrr::map_dbl(freq_list, ~min(.$frequency))
-      )
-
-predict(model1, ngram_in)
+# find probabilities of n-1 grams (vectorised)
+subProbabilities <- function(ngram, subfreq, unk_prob) {
+      # cuts last token out of ngrams
+      subgram <- sub("_[^_]*$", "", ngram)
+      # finds probabiltiy of subgram; if not found (NULL result), uses unk_prob instead
+      purrr::map_dbl(subgram,
+                     ~max(filter(subfreq, feature == .)$frequency,
+                          unk_prob))
+}

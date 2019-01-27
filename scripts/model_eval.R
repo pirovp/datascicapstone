@@ -41,15 +41,18 @@ setGeneric("tokenProbability", function(object, ...) {
 setMethod(f="tokenProbability",
           signature="langmodel",
           definition=function(object, sentence="", position=1L) {
+                
+                prob_list <- object@prob_list
+                unk_prob <- object@unk_prob
+                
                 # tokenise input sentence if nencessary
                 if (class(sentence)!="tokens") sentence <- cleanTokens(sentence)
                 
                 max_n <- object@max_n
                 ngram_start <- max(1, position-max_n+1)
                 ngram <- sentence[[1]][ngram_start:position]
+                
                 # probability with stupid backoff
-                prob_list <- object@freq_list
-                unk_prob <- object@unk_prob
                 # condition on n-1 ngram!
                 match_ngrams <- stupidBackoff(ngram, prob_list, max_n, unk_prob)
                 probability <- match_ngrams$frequency[1]/match_ngrams$frequency[2]
