@@ -19,7 +19,8 @@ setMethod(f="predict",
                 cond_probs <- object@cond_probs
                 
                 # tokenise input sentence if nencessary
-                if (class(sentence)!=tokens) sentence <- cleanTokens(sentence)
+                if (class(sentence)!="tokens") sentence <- cleanTokens(sentence)
+                sentence <- unlist(sentence)
                 
                 # cut input sentence to (n-1)gram
                 max_n <- min(object@max_n, length(sentence)+1)
@@ -35,6 +36,6 @@ setMethod(f="predict",
                 # choose the best -depends on model
                 best_ngrams <- mutate(possible_ngrams,
                                       probability=ngramProbability(ngram, possible_ngrams)) %>%
-                               arrange(possible_ngrams, desc(probability))
+                               arrange(desc(probability))
           }
 )

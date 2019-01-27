@@ -7,8 +7,10 @@ corpusPerplexity <- function(corpus, lmodel) {
       # non normalised perplexity each sentence
       perplexities <- purrr::map_dfr(corpus, ~perplexity(lmodel, .))
       # normalise by taking nth root (n = total number of words)
-      perplexity <- mean(perplexities$perplexity)
-      return(perplexities)
+      perplexity <- c(mean=mean(perplexities$perplexity),
+                      sd=sd(perplexities$perplexity))
+      # remove 
+      return(list(perplexities, perplexity))
 }
 
 # evaluates probability of token inside sentence
@@ -20,11 +22,14 @@ setMethod(f="perplexity",
           signature="langmodel",
           definition=function(object, sentence="") {
                 tokens <- cleanTokens(sentence)
+                
                 n <- length(tokens[[1]])
+                if (n==0) return(NULL)
+                
                 token_probabilities = purrr::map_dbl(1:n, 
                                                      ~tokenProbability(object,
                                                                        tokens,
-                                                                       position=.x)
+                                                                       position=.)
                                                      )
                 perplexity=1/prod(token_probabilities)^(1/n)
                 return(tibble(perplexity=perplexity, n=n))
@@ -47,10 +52,11 @@ setMethod(f="tokenProbability",
                 
                 # tokenise input sentence if nencessary
                 if (class(sentence)!="tokens") sentence <- cleanTokens(sentence)
+                sentence <- unlist(sentence)
                 
                 max_n <- object@max_n
                 ngram_start <- max(1, position-max_n+1)
-                ngram <- sentence[[1]][ngram_start:position]
+                ngram <- sentence[ngram_start:position]
                 
                 # probability of ngram
                 match_ngrams <- purrr::map_dfr(length(ngram):1, function(i) {
@@ -58,7 +64,8 @@ setMethod(f="tokenProbability",
                                 filter(feature==paste(tail(ngram, i), collapse = "_"))
                                 }
                 )
-                
-                ngramProbability(ngram, match_ngrams)
+                probability <- ngramProbability(ngram, match_ngrams)
+                if (is.na(probability)) return(object@unk_prob[1]) 
+                else return(probability)
           }
 )
