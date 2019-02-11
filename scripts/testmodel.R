@@ -20,8 +20,10 @@ model1 <-
             prob_list = prob_list,
             max_n = length(prob_list),
             unk_prob = purrr::map_dbl(prob_list, ~min(.$frequency)),
-            ngramProbability = stupidBackoffProb
+            evalProbability = stupidBackoff_eval,
+            predictProbability = stupidBackoff_predict
       )
+
 model1@cond_probs <- condProbabilities(model1@prob_list, model1@unk_prob)
 
 predict(model1, ngram_in)

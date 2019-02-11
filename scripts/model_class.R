@@ -7,7 +7,8 @@ setClass(
             # IMPROVEMENTS POSSIBLE HERE
             # can be subset calcd at the moment
             cond_probs = "list",
-            ngramProbability = "function"
+            evalProbability = "function",
+            predictProbability = "function"
       )
 )
 
@@ -15,7 +16,7 @@ setMethod(f="predict",
           signature="langmodel",
           definition=function(object, sentence="") {
                 
-                ngramProbability <- object@ngramProbability
+                predictProbability <- object@predictProbability
                 cond_probs <- object@cond_probs
                 
                 # tokenise input sentence if nencessary
@@ -35,12 +36,7 @@ setMethod(f="predict",
                 )
                 
                 # choose the best -depends on model
-                vNgramProbability <- Vectorize(ngramProbability, "ngram")
-                #stupid b-o should be treated specially
-                best_ngrams <- mutate(possible_ngrams,
-                                      probability=vNgramProbability(strsplit(feature, "_"),
-                                                                   possible_ngrams)) %>%
-                               arrange(desc(probability))
-                return(best_ngrams[1:10,])
+                best_ngrams <- predictProbability(possible_ngrams)
+                return(unique(best_ngrams$predicted_word)[1:10])
           }
 )

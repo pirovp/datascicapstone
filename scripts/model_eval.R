@@ -48,7 +48,7 @@ setMethod(f="tokenProbability",
           definition=function(object, sentence="", position=1L) {
                 
                 cond_probs <- object@cond_probs
-                ngramProbability <- object@ngramProbability
+                evalProbability <- object@evalProbability
                 
                 # tokenise input sentence if nencessary
                 if (class(sentence)!="tokens") sentence <- cleanTokens(sentence)
@@ -64,7 +64,7 @@ setMethod(f="tokenProbability",
                                 filter(feature==paste(tail(ngram, i), collapse = "_"))
                                 }
                 )
-                probability <- ngramProbability(ngram, match_ngrams)
+                probability <- evalProbability(ngram, match_ngrams)
                 if (is.na(probability)) return(object@unk_prob[1]) 
                 else return(probability)
           }
