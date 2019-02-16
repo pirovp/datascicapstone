@@ -8,7 +8,8 @@ setClass(
             # can be subset calcd at the moment
             cond_probs = "list",
             evalProbability = "function",
-            predictProbability = "function"
+            predictProbability = "function",
+            parameters = "list"
       )
 )
 
