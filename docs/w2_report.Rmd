@@ -9,8 +9,35 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Load data, basic analysis
+# Introduction
+This report is part of the Coursera Data Science specialization capstone project. 
 
-# Tokenise
+# Load data, basic corpora stats
+- load the data - complete or sample for quick analysis
+- origin of the corpora
+- we've enough data, but other corpora are available or scrapeable (corpus of Contemporary American English (COCA), British National Corpus); gutenbergr allows downloading and processing public domain works in the Project Gutenberg collection. but consider register (colloquial and written) and modern english.
+Size, n texts, n words
+
+# Sampling
+For ease of work, we use a small sample in expl data analysis - leave aside a lot for test, + computational ease
+
+# Tokenisation and clean-up
+      -punctuation
+      -emojis, urls
+      -swearwords
+      -numbers
+      -stemming
+      -dictionaries
 
 # Tokens statistics (1-gram, n-gram)
+
+# Model planning
+Can kill off a lot of words as we care mostly about the top frequencies
+Minimal model: 2-gram, fall back to 1-gram if the 2-gram doesn't exist (stupid back-off)
+Doesn't require fitting any parameters.
+Refinements: - smoothing (Good Turing)
+             - n-gram lm with KatzKback-off or interpolation?
+             - cache lm
+What if we see a completely new words at test time? 
+
+given the large amount of data we can set aside test and validation sets, and calculate accuracy / entropy / perplexity of the models on them.
