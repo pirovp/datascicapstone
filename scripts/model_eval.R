@@ -1,3 +1,5 @@
+library(purrr)
+
 # determine perplexity of a language model 
 # inputs: a corpus of text (corpus object), and a model (langmodel object)
 # output: perplexity (double)
@@ -5,7 +7,7 @@ corpusPerplexity <- function(corpus, lmodel) {
       # split corpus into sentences
       corpus <- unlist(cleanTokens(corpus, what="sentence"))
       # non normalised perplexity each sentence
-      perplexities <- purrr::map_dfr(corpus, ~perplexity(lmodel, .))
+      perplexities <- map_dfr(corpus, ~perplexity(lmodel, .))
       # normalise by taking nth root (n = total number of words)
       perplexity <- c(mean=mean(perplexities$perplexity),
                       sd=sd(perplexities$perplexity))
@@ -26,10 +28,10 @@ setMethod(f="perplexity",
                 n <- length(tokens[[1]])
                 if (n==0) return(NULL)
                 
-                token_probabilities = purrr::map_dbl(1:n, 
-                                                     ~tokenProbability(object,
-                                                                       tokens,
-                                                                       position=.)
+                token_probabilities = map_dbl(1:n, 
+                                              ~tokenProbability(object,
+                                                                tokens,
+                                                                position=.)
                                                      )
                 perplexity=1/prod(token_probabilities^(1/n))
                 return(tibble(perplexity=perplexity, n=n))
@@ -59,7 +61,7 @@ setMethod(f="tokenProbability",
                 ngram <- sentence[ngram_start:position]
                 
                 # probability of ngram
-                match_ngrams <- purrr::map_dfr(length(ngram):1, function(i) {
+                match_ngrams <- map_dfr(length(ngram):1, function(i) {
                                 filter(cond_probs, ngram_level==i)$cond_probs[[1]] %>%
                                 filter(feature==paste(tail(ngram, i), collapse = "_"))
                                 }
