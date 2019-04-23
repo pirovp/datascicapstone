@@ -1,28 +1,36 @@
+require(stringr)
+
 interpolatedProbability <- function(ngram, matches, lambdas, unk_prob) {
       n <- length(lambdas)
-      purrr::map_dbl(1:n,
-                     function(i) {
-                           prob = matches %>%
-                                 filter(feature == paste(tail(ngram, i), collapse = "_")) %>%
-                                 .$condprob
-                           if (length(prob) == 0)
-                                 prob <- unk_prob[i]
-                           return(prob)
-                     }) * lambdas
+      map_dbl(1:n,
+              function(i) {
+                  prob = matches %>%
+                        filter(feature == paste(tail(ngram, i), collapse = "_")) %>%
+                        .$condprob
+                  if (length(prob) == 0)
+                        prob <- unk_prob[i]
+              return(prob)
+      }) %*% lambdas %>% as.numeric()
 }
 
-stupidBackoff_eval <- function(ngram, matches, lambdas, unk_prob) {
+interpolated_eval <- function(ngram, matches, lambdas, unk_prob) {
       return(interpolatedProbability(ngram, matches, lambdas, unk_prob))
 }
 
-stupidBackoff_predict <- function(matches, lambdas, unk_prob) {
-      possible_ngrams <- mutate(possible_ngrams, ngram=(strsplit(feature, "_")))
-      candidates <- filter(possible_ngrams,)
-      purrr:map_dbl(
-            matches$feature,
-            function(x) {
-                  ngram = 
-                  interpolatedProbability(ngram, matches, lambda, unk_prob)
-            }
+interpolated_predict <- function(ngram_in, matches, lambdas, unk_prob) {
+      
+      matches <- mutate(matches, 
+                        n_1gram = word(feature, sep = "_", end = -2),
+                        ngram_out = word(feature, sep = "_", start = -1)
       )
+      
+      candidates <- filter(matches, n_1gram == ngram_in) %>%
+            mutate(prob = interpolatedProbability(str_split(feature, "_")[[1]],
+                                                            matches,
+                                                            lambdas,
+                                                            unk_prob)
+                  ) %>%
+            arrange(prob)
+      
+      return(candidates)
 }
