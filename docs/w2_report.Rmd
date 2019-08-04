@@ -99,6 +99,7 @@ ngramFreqPlot <- function(corpus) {
 ```
 
 n-grams which appear only once, or a few times in the corpus, are likely to offer little value in predicting future text. It is important to look at the number of n-grams with frequencies larger than 1/2/3.
+
 ```{r, cache = TRUE}
 frequencies_16 <- ngramFreqPlot(merged_corpus)
 subcorpus <- corpus_sample(merged_corpus, size = 3000)
@@ -108,6 +109,7 @@ frequencies_16_tot <- rbind(
       mutate(frequencies_16_sub, sample = 3000)
 ) %>% mutate(sample=as.factor(sample))
 ```
+
 As the number of n-grams is still extremely large even in our corpus sub-sample (```r length(frequencies_16)``` 1- to 6- grams), the n-grams were downsampled as well. Two samples of size 3000 and 30000 were taken, as the downsampling is sure to affect the frequency of observedn-grams.
 It is evident for the graph that the frequency of the top n-grams falls off rapidly (Zipf's law, power function), and for high `n` all except a few top observed n-grams will not be useful.
 
@@ -127,6 +129,7 @@ ggplot(min_count_ngrams, aes(x=min_n, y=n, colour = sample)) +
       facet_wrap(vars(ngram), scales = "free_y", labeller = labeller(ngram = ngram_labeller)) +
       labs(x = "Minimum count", y = "Number of n-grams", title = "Numbers of high-count (>1) n-grams in the sample")
 ```
+
 To help with this assessment, I'm then looking at the distribution of n-gram counts. As expected the distribution is highly skewed (plotting histograms on a logarithmic axis), and the top n-grams represent the overwhelming majority of observed instances.
 
 ``` {r, echo = FALSE}
@@ -138,6 +141,7 @@ ggplot(frequencies_16, aes(count))  +
       facet_wrap(vars(ngram), scales = "free", labeller = labeller(ngram = ngram_labeller)) +
       labs(title="Distributions of n-gram counts", x = "Count", y = "Number of n-grams")
 ```
+
 A cumulative frequency plot will help when deciding cutoffs in selecting a partial amount of data. Importantly, the graphs are cut off at the point after which the cdf becomes linear, because all remaining n-grams have count 1.
 Again, to estiamte the effect of downsampling we're looking at the difference between the 3000 n-gram sample and the 30000 n-gram sample.
 
