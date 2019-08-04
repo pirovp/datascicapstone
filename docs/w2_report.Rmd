@@ -1,43 +1,183 @@
 ---
-title: "Exploratory analysis"
+title: "Exploratory data analysis"
 author: "Paolo Pirovano"
-date: "27 March 2018"
+date: "4 Aug 2018"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(quanteda)
+library(ggplot2)
+library(dplyr)
 ```
 
 # Introduction
-This report is part of the Coursera Data Science specialization capstone project. 
+This report is part of the Coursera Data Science specialization capstone project. The goal is to develop predictive text models and integrate them into a Shiny app with functionality similar to that of smartphone keyboards, i.e. predicting the next word in a sentence based on the previous input.
 
-# Load data, basic corpora stats
-- load the data - complete or sample for quick analysis
-- origin of the corpora
-- we've enough data, but other corpora are available or scrapeable (corpus of Contemporary American English (COCA), British National Corpus); gutenbergr allows downloading and processing public domain works in the Project Gutenberg collection. but consider register (colloquial and written) and modern english.
-Size, n texts, n words
+# Raw data
+## General corpora description
+The raw data is publicly available, and consists of news articles, blog entries and twitter feeds in four languages, collected by a web crawler. The project will be limited to English language modelling. The data is programmatically downloaded from the provided weblink.
 
-# Sampling
-For ease of work, we use a small sample in expl data analysis - leave aside a lot for test, + computational ease
+Some general statistics on the corpus:
+```{r, cache = TRUE}
+encorp <- c(
+  blogs = "../data/final/en_US/en_US.blogs.txt",
+  news = "../data/final/en_US/en_US.news.txt",
+  twitter = "../data/final/en_US/en_US.twitter.txt"
+)
+
+wordcount <- function(file) {
+      counts <- system(paste("wc", file), intern = TRUE)
+      counts <- strsplit(counts, " +")[[1]]
+      dplyr::tibble(File = basename(file), Lines=counts[2], Words=counts[3], MBytes=as.numeric(counts[4])*1e-6)
+}
+counts <- purrr::map_df(encorp, wordcount)
+knitr::kable(counts)
+```
+
+The data constitutes a fairly large corpus (over 100m words). Should more data be necessary, several other corpora are available or scrapeable from the internet. In particular the corpus of Contemporary American English (COCA), and the British National Corpus; moreover, gutenbergr allows downloading and processing public domain works in the Project Gutenberg collection. Nevertheless, in the choice of data for this application  register (colloquial or written), and distinction between 21st century or earlier periods English  must be considered.
+
+## Sampling
+In order to keep the data size initially manageable, 10000 lines from each of the three files/categories (blogs, twitter, news) are randomly sampled. This is a large enough sample to get an idea of the structure of the data, and for inital modelling with relatively small computational load. This way, plenty is set aside for increasing model size, if necessary, and for model testing.
+I'm using the `quanteda` R package, and the sampled lines are converted into `corpus` objects.
+
+``` {r, cache = TRUE}
+load("../data/smallsample.Rdata")
+merged_corpus <- corpus(c(blogs, news, twitter))
+```
 
 # Tokenisation and clean-up
-      -punctuation
-      -emojis, urls
-      -swearwords
-      -numbers
-      -stemming
-      -dictionaries
+An important part of processing the raw text data is the tokenisation and clean up. A large part of the work can be easily handled with `quanteda`. Specifically, I'll generate word tokens, ignoring case, punctuation, non-word symbols such as emojis, numbers and URLs (as they are very likely to be unique or very low frequency). I'm keeping swearwords and acronyms.
+Stemming is a common processing step in natural language processing applications, but I've decided it not to be appropriate for text prediction.
 
-# Tokens statistics (1-gram, n-gram)
+``` {r, cache = TRUE}
+
+cleanTokens <- function(corpus, what="word") {
+      n1grams <- tokens(corpus,
+                     what = what,
+                     remove_numbers = TRUE, 
+                     remove_punct = TRUE,
+                     remove_symbols = TRUE,
+                     remove_separators = TRUE,
+                     remove_twitter = FALSE,
+                     remove_hyphens = TRUE,
+                     remove_url = TRUE) %>%
+            tokens_tolower(keep_acronyms = TRUE)
+}
+```
+
+# Tokens statistics
+First, I'll investigate the frequency distribution of the tokens obtaconstruct a document-feature matrix, reshape and prepare the data for plotting.
+
+``` {r, echo = FALSE}
+
+# number of >10 count n-grams
+ngramFreqPlot <- function(corpus) {
+      purrr::map_dfr(
+            1:6,
+            ~ textstat_frequency(dfm(
+                  corpus,
+                  ngrams = .x,
+                  remove_punct = TRUE,
+                  remove_numbers = TRUE, 
+                  remove_symbols = TRUE,
+                  remove_separators = TRUE,
+                  remove_twitter = FALSE,
+                  remove_hyphens = TRUE,
+                  remove_url = TRUE
+            )) %>%
+                  mutate(ngram = as.numeric(.x)) %>%
+                  rename(count = frequency) %>%
+                  mutate(frequency = count / sum(count))
+      ) %>%
+            # cumulative frequencies
+            group_by(ngram) %>%
+            mutate(per_rank = rank(rank) / length(rank),
+                   cum_freq = cumsum(frequency))
+}
+```
+
+n-grams which appear only once, or a few times in the corpus, are likely to offer little value in predicting future text. It is important to look at the number of n-grams with frequencies larger than 1/2/3.
+```{r, cache = TRUE}
+frequencies_16 <- ngramFreqPlot(merged_corpus)
+subcorpus <- corpus_sample(merged_corpus, size = 3000)
+frequencies_16_sub <- ngramFreqPlot(subcorpus)
+frequencies_16_tot <- rbind(
+      mutate(frequencies_16, sample = 30000),
+      mutate(frequencies_16_sub, sample = 3000)
+) %>% mutate(sample=as.factor(sample))
+```
+As the number of n-grams is still extremely large even in our corpus sub-sample (```r length(frequencies_16)``` 1- to 6- grams), the n-grams were downsampled as well. Two samples of size 3000 and 30000 were taken, as the downsampling is sure to affect the frequency of observedn-grams.
+It is evident for the graph that the frequency of the top n-grams falls off rapidly (Zipf's law, power function), and for high `n` all except a few top observed n-grams will not be useful.
+
+```{r}
+min_count_ngrams <- purrr::map_dfr(c(2:20),
+                                   ~ filter(frequencies_16_tot, count >= .x) %>%
+                                     #mutate(ngram = paste0(as.character(ngram), "-grams")) %>%
+                                     group_by(ngram, sample) %>%
+                                     summarise(min_n = .x, 'n'=n())
+)
+```
+
+``` {r, echo = FALSE}
+ngram_labeller <- function(n) {paste0(as.character(n), "-grams")}      
+ggplot(min_count_ngrams, aes(x=min_n, y=n, colour = sample)) +
+      geom_point() +
+      facet_wrap(vars(ngram), scales = "free_y", labeller = labeller(ngram = ngram_labeller)) +
+      labs(x = "Minimum count", y = "Number of n-grams", title = "Numbers of high-count (>1) n-grams in the sample")
+```
+To help with this assessment, I'm then looking at the distribution of n-gram counts. As expected the distribution is highly skewed (plotting histograms on a logarithmic axis), and the top n-grams represent the overwhelming majority of observed instances.
+
+``` {r, echo = FALSE}
+# 1. examine distribution of n-grams
+# histogram
+ggplot(frequencies_16, aes(count))  +
+      geom_histogram(bins= 20) +
+      scale_y_log10() +
+      facet_wrap(vars(ngram), scales = "free", labeller = labeller(ngram = ngram_labeller)) +
+      labs(title="Distributions of n-gram counts", x = "Count", y = "Number of n-grams")
+```
+A cumulative frequency plot will help when deciding cutoffs in selecting a partial amount of data. Importantly, the graphs are cut off at the point after which the cdf becomes linear, because all remaining n-grams have count 1.
+Again, to estiamte the effect of downsampling we're looking at the difference between the 3000 n-gram sample and the 30000 n-gram sample.
+
+``` {r, echo = FALSE}
+#cum freq
+ggplot(filter(frequencies_16, count>1)) +
+      geom_line(aes(x=per_rank*100, y=cum_freq)) +
+      facet_wrap(vars(ngram), scales= "free", labeller = labeller(ngram = ngram_labeller)) +
+      labs(title="Cumulative frequencies of top n-grams in the sample", x = "Rank percentile", y = "Cumulative frequency")
+```
+
+``` {r, echo = FALSE}
+ggplot(filter(frequencies_16_tot, count>1)) +
+      geom_line(aes(x=per_rank*100, y=cum_freq, colour=as.factor(sample))) +
+      facet_wrap(vars(ngram), scales= "free", labeller = labeller(ngram = ngram_labeller)) +
+      labs(title="Cumulative frequencies of top n-grams in the sample of size 3000", x = "Rank percentile", y = "Cumulative frequency")
+```
+
+Finally, we can look at the top n-grams for each class, to get an idea of what they are or if there is anything out of the ordinary. This does not seem to be the case.
+
+``` {r, echo = FALSE}
+frequencies_16 %>% ungroup() %>%
+      filter(rank < 10) %>%
+      mutate(feature = gsub("_", " ",feature)) %>%
+      mutate(feature = factor(feature, levels = feature)) %>%
+      ggplot(aes(feature, count))  +
+      geom_point() + 
+      theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+      facet_wrap(vars(ngram), scales = "free", labeller = labeller(ngram = ngram_labeller))
+```
 
 # Model planning
-Can kill off a lot of words as we care mostly about the top frequencies
-Minimal model: 2-gram, fall back to 1-gram if the 2-gram doesn't exist (stupid back-off)
-Doesn't require fitting any parameters.
-Refinements: - smoothing (Good Turing)
-             - n-gram lm with KatzKback-off or interpolation?
-             - cache lm
-What if we see a completely new words at test time? 
+The previous analysis has shown that one can do away with a large percentage of words, as we care most in text prediction about the top frequency words. This means that probably  small models can be obtained with little loss in accuracy.
 
-given the large amount of data we can set aside test and validation sets, and calculate accuracy / entropy / perplexity of the models on them.
+A minimal model, implementing the stupid back-off algorithm, will be the first to be created: 
+* Look for the most frequent 2-gram, conditionally on the observed last word. If found, predict the second word of the 2-gram.
+* If such a 2-gram does not exist, predict the most common 1-gram.
+This model doesn't require fitting any parameters, but it varies depending on the size of the training data it stores.
+
+From this basis, refinements to the model will be explored. Good-Turing smoothing can be introduced, to handle of new words (with 0 frequency in the corpora).
+Furthermore, n-gram (`n>2`) models will be generated, implementing either the Katz back-off algorithm, or interpolation models which asssign different weights to the previous `n` words.
+
+The models' performances will be assessed with different metrics (accuracy, entropy, perplexity). Given the large amount of data avaialble, I anticipate no need for calculating perplexity on the training data. All metrics estimation can be done on separate test and validation sets.

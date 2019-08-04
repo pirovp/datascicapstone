@@ -1,4 +1,4 @@
-down_self <- function(url, folder) {
+ down_self <- function(url, folder) {
 # Download file without specifying name
       urlsplit = strsplit(url, "/")[[1]]
       filename = urlsplit[length(urlsplit)]
