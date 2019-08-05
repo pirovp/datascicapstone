@@ -1,21 +1,9 @@
 # prepare frequency tables
 generateDfms <- function(corpus, ngrams = 1:6) {
-      dfm_list <- purrr::map(ngrams, ~dfm(
-            corpus,
-            ngrams = .x,
-            tolower = TRUE,
-            remove_numbers = TRUE,
-            remove_punct = TRUE,
-            remove_symbols = TRUE,
-            remove_separators = TRUE,
-            remove_twitter = FALSE,
-            remove_hyphens = TRUE,
-            remove_url = TRUE
-            #remove = "stopwords"
-      ) 
+      toks <- cleanTokens(corpus) 
+      dfm_list <- purrr::map(ngrams, ~dfm(toks, ngrams = .))
       # %>% dfm_weight("prop")
       # %>% dfm_smooth()
-      )
 }
 
 # match (n+1)grams that start with pattern

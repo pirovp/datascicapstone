@@ -6,3 +6,4 @@
 data/*
 knowledge/plan
 docs/w2_report_cache/**/*
+**/*.Rdata
