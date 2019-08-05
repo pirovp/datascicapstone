@@ -9,7 +9,7 @@ cleanTokens <- function(corpus, what="word") {
                      remove_twitter = FALSE,
                      remove_hyphens = TRUE,
                      remove_url = TRUE) %>%
-            tokens_tolower(keep_acronyms = TRUE) #%>%
-            #Dr. Martin Porter's stemming algorithm
+            tokens_tolower(keep_acronyms = TRUE)
             #tokens_wordstem()
+            #tokens_remove(stopwords())
 }

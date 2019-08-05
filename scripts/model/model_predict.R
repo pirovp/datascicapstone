@@ -1,18 +1,3 @@
-setClass(
-      "langmodel",
-      representation(
-            prob_list = "list",
-            max_n = "numeric",
-            unk_prob = "numeric",
-            # IMPROVEMENTS POSSIBLE HERE
-            # can be subset calcd at the moment
-            cond_probs = "list",
-            evalProbability = "function",
-            predictProbability = "function",
-            parameters = "list"
-      )
-)
-
 setMethod(f="predict",
           signature="langmodel",
           definition=function(object, sentence="") {
@@ -27,13 +12,13 @@ setMethod(f="predict",
                 # cut input sentence to (n-1)gram
                 max_n <- min(object@max_n, length(sentence)+1)
                 n_1gram <- tail(sentence, max_n-1)
-
+                
                 # find all matching n-grams given (n-1)gram, for n=1 to max_n
                 possible_ngrams <- purrr::map_dfr(max_n:1, function(i) {
-                        if (i>1) cond_gram <- tail(n_1gram, i-1) else cond_gram <- "1"
-                        filter(cond_probs, ngram_level==i)$cond_probs[[1]] %>%
-                        filter(conditioned_on==paste(cond_gram, collapse = "_"))
-                        }
+                      if (i>1) cond_gram <- tail(n_1gram, i-1) else cond_gram <- "1"
+                      filter(cond_probs, ngram_level==i)$cond_probs[[1]] %>%
+                            filter(conditioned_on==paste(cond_gram, collapse = "_"))
+                }
                 )
                 
                 # choose the best -depends on model
