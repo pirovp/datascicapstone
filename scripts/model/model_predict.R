@@ -1,3 +1,5 @@
+source("model_aux_functions.R")
+
 setMethod(f="predict",
           signature="langmodel",
           definition=function(object, sentence="") {

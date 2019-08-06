@@ -1,3 +1,5 @@
+source("model_aux_functions.R")
+
 # determine perplexity of a language model 
 # inputs: a corpus of text (corpus object), and a model (langmodel object)
 # output: perplexity (double)

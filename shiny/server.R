@@ -1,11 +1,11 @@
+source("model/model.R", chdir = TRUE)
+load("langmodels/model1.Rdata")
+langmod <- model1
+
 server <- function(input, output) {
       
-      nextWords <- function(txt) {
-            sample(c("cat", "giraffe", "liger"))
-      }
-      
       predictions <- reactive({
-            nextWords(input$user_text)
+            predict(langmod, input$user_text)
             })
       
       output$prediction <- renderText(predictions()[1])

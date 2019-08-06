@@ -5,6 +5,7 @@ stupidBackoff_eval <- function(ngram, matches) {
 
 #
 stupidBackoff_predict <- function(matches) {
+      require(dplyr)
       return(mutate(matches,
                     predicted_word=sub(".*_", "", feature)
                     )
