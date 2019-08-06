@@ -1,9 +1,21 @@
 # prepare frequency tables
 generateDfms <- function(corpus, ngrams = 1:6) {
       toks <- cleanTokens(corpus) 
-      dfm_list <- purrr::map(ngrams, ~quanteda::dfm(toks, ngrams = .))
+      purrr::map(ngrams, ~quanteda::dfm(toks, ngrams = .))
       # %>% dfm_weight("prop")
       # %>% dfm_smooth()
+}
+
+trimDfm <- function(dfm, max_features = 1000) {
+      
+      require(dplyr)
+      
+      textstat_frequency(dfm) %>%
+            select(-docfreq, -group) %>%
+            rename(count = frequency) %>%
+            mutate(frequency = count / sum(count)) %>%
+            head(max_features)
+      
 }
 
 #calculate probabilities of n-grams conditioned on n - 1 grams
