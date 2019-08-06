@@ -7,10 +7,9 @@ output:
             keep_md: yes
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
+
+## Introduction
 This app constitutes the final project in Coursera Data Science specialization capstone. Its functionality is similar to that of smartphone keyboards, i.e. predicting the next word in a sentence based on the previous input. It works exclusively in the English language. The language model was trained on a publicly available dataset, consisting of news articles, blog entries and twitter feeds, collected by a web crawler. An exploratory data analysis report is available at http://rpubs.com/pyrop/dsc_eda. An approximate metric for the performance of the model can also be displayed, together with the predictions.
 
 
@@ -34,7 +33,8 @@ The models are implemented as `langmodel` S4 objects, with implemented methods `
 
 ### `langmodel` Class
 
-``` {r, eval=FALSE}
+
+```r
 setClass(
       "langmodel",
       representation(
@@ -47,7 +47,6 @@ setClass(
             parameters = "list"
       )
 )
-
 ```
 
 `prob_list`: probabilities of n-grams computed from training data
@@ -65,9 +64,9 @@ setClass(
 `parameters`: other parameters that might be used by the model
 
 ### `predict`
-``` {r, eval=FALSE}
-predict(object, sentence="")
 
+```r
+predict(object, sentence="")
 ```
 returns a data frame, with the ten most likely words to appear next according to the model, ranked by probability.
 Arguments:
@@ -77,9 +76,9 @@ Arguments:
 `sentence`: string, input sentence to evaulate
 
 ### `tokenProbability`
-``` {r, eval=FALSE}
-predict(object, sentence="", position=1L)
 
+```r
+predict(object, sentence="", position=1L)
 ```
 returns a numeric value, the probability of the `position`th token in the input sentence.
 
@@ -92,9 +91,9 @@ Arguments:
 `position`: integer, position of word to evaluate
 
 ### `perplexity`
-``` {r, eval=FALSE}
-perplexity(object, sentence="")
 
+```r
+perplexity(object, sentence="")
 ```
 returns a numeric, the per-word perplexity of the input sequence according to the model (nth square of the product of reciprocal probablities, https://en.wikipedia.org/wiki/Perplexity).
 
