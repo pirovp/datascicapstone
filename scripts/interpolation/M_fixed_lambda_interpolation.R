@@ -1,5 +1,3 @@
-require(stringr)
-
 interpolatedProbability <- function(ngram, matches, lambdas, unk_prob) {
       n <- length(lambdas)
       map_dbl(1:n,
@@ -20,12 +18,12 @@ interpolated_eval <- function(ngram, matches, lambdas, unk_prob) {
 interpolated_predict <- function(ngram_in, matches, lambdas, unk_prob) {
       
       matches <- mutate(matches, 
-                        n_1gram = word(feature, sep = "_", end = -2),
-                        ngram_out = word(feature, sep = "_", start = -1)
+                        n_1gram = stringr::word(feature, sep = "_", end = -2),
+                        ngram_out = stringr::word(feature, sep = "_", start = -1)
       )
       
       candidates <- filter(matches, n_1gram == ngram_in) %>%
-            mutate(prob = interpolatedProbability(str_split(feature, "_")[[1]],
+            mutate(prob = interpolatedProbability(strsplit(feature, "_")[[1]],
                                                             matches,
                                                             lambdas,
                                                             unk_prob)

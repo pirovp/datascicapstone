@@ -15,7 +15,7 @@ This app constitutes the final project in Coursera Data Science specialization c
 
 # Language models
 
-For this application, language models based on back-off algorithms were explored, with varying choices of training data size, length of n-grams considered, etc. A small interpolation model (with n = 3) was also investigated.
+For this application, language models based on back-off algorithms were explored, with varying choices of training data size, length of n-grams considered, etc. Interpolation models (assigning different weights to n, n-1, n-2 grams) were also examined but proved to be too computationally expensive in training phase.
 
 ### Training and test
 The models were trained on subsamples of the full available data. The nature of the models is such that size, accuracy and training time both increase with increasing the size of the training sample.
@@ -23,10 +23,6 @@ The models were trained on subsamples of the full available data. The nature of 
 ### Metrics
 The best model was selected as the best compromise in terms of *accuracy/perplexity*, *size* and *computational cost* both at training and prediction stages. 
 The performance of the models was evaluated by computing perplexity on a spearate test set, sampled from the same dataset. Finally, perplexity was computed on a validation set for the chosen model. Perplexity was a monotone function of accuracy, so either would indicate the same better model in a comparison. Perplexity is displayed as it yields bigger numbers and a more clear discrimination between models.
-
-### Models comparison
-The interpolation model has better performance than the back-off, given the same trainin set. However, the computational cost grows rapidly to an unfeasible level (at least on a laptop) as the training set increases in size. For this reason it did not outperform back-off models.
-
 
 # Implementation
 The models are implemented as `langmodel` S4 objects, with implemented methods `predict`, `perplexity` and `tokenProbability`. The framework is in principle extendible to new language models. There are dependencies to the packages `quanteda`, `dplyr` and `purrr`.

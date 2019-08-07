@@ -23,6 +23,9 @@ setGeneric("perplexity", function(object, ...) {
 setMethod(f="perplexity",
           signature="langmodel",
           definition=function(object, sentence="") {
+                
+                require(dplyr)
+                
                 tokens <- cleanTokens(sentence)
                 
                 n <- length(tokens[[1]])
@@ -49,6 +52,8 @@ setMethod(f="tokenProbability",
           signature="langmodel",
           definition=function(object, sentence="", position=1L) {
                 
+                require(dplyr)
+                
                 cond_probs <- object@cond_probs
                 evalProbability <- object@evalProbability
                 
@@ -66,6 +71,7 @@ setMethod(f="tokenProbability",
                                 filter(feature==paste(tail(ngram, i), collapse = "_"))
                                 }
                 )
+                
                 probability <- evalProbability(ngram, match_ngrams)
                 if (is.na(probability)) return(object@unk_prob[1]) 
                 else return(probability)
