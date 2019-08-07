@@ -9,13 +9,12 @@ output:
 
 
 
-## Introduction
 This app constitutes the final project in Coursera Data Science specialization capstone. Its functionality is similar to that of smartphone keyboards, i.e. predicting the next word in a sentence based on the previous input. It works exclusively in the English language. The language model was trained on a publicly available dataset, consisting of news articles, blog entries and twitter feeds, collected by a web crawler. An exploratory data analysis report is available at http://rpubs.com/pyrop/dsc_eda. An approximate metric for the performance of the model can also be displayed, together with the predictions.
 
 
 # Language models
 
-For this application, language models based on back-off algorithms were explored, with varying choices of training data size, length of n-grams considered, etc. A small interpolation model (with n = 3) was also investigated.
+For this application, language models based on back-off algorithms were explored, with varying choices of training data size, length of n-grams considered, etc. Interpolation models (assigning different weights to n, n-1, n-2 grams) were also examined but proved to be too computationally expensive in training phase.
 
 ### Training and test
 The models were trained on subsamples of the full available data. The nature of the models is such that size, accuracy and training time both increase with increasing the size of the training sample.
@@ -24,8 +23,7 @@ The models were trained on subsamples of the full available data. The nature of 
 The best model was selected as the best compromise in terms of *accuracy/perplexity*, *size* and *computational cost* both at training and prediction stages. 
 The performance of the models was evaluated by computing perplexity on a spearate test set, sampled from the same dataset. Finally, perplexity was computed on a validation set for the chosen model. Perplexity was a monotone function of accuracy, so either would indicate the same better model in a comparison. Perplexity is displayed as it yields bigger numbers and a more clear discrimination between models.
 
-### Models comparison
-The interpolation model has better performance than the back-off, given the same trainin set. However, the computational cost grows rapidly to an unfeasible level (at least on a laptop) as the training set increases in size. For this reason it did not outperform back-off models.
+The model used in the app is a simple 4-gram model implementing the Katz's back-off algorithm, trained on 300000 lines of text data.
 
 
 # Implementation

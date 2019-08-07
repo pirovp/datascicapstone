@@ -24,6 +24,7 @@ The models were trained on subsamples of the full available data. The nature of 
 ### Metrics
 The best model was selected as the best compromise in terms of *accuracy/perplexity*, *size* and *computational cost* both at training and prediction stages. 
 The performance of the models was evaluated by computing perplexity on a spearate test set, sampled from the same dataset. Finally, perplexity was computed on a validation set for the chosen model. Perplexity was a monotone function of accuracy, so either would indicate the same better model in a comparison. Perplexity is displayed as it yields bigger numbers and a more clear discrimination between models.
+
 The model used in the app is a simple 4-gram model implementing the Katz's back-off algorithm, trained on 300000 lines of text data.
 
 

@@ -5,8 +5,8 @@ account: pyrop
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 1070297
-bundleId: 2294926
+bundleId: 2299178
 url: https://pyrop.shinyapps.io/text_prediction/
-when: 1565098544.69335
+when: 1565208301.31221
 asMultiple: FALSE
 asStatic: FALSE

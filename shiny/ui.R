@@ -1,6 +1,8 @@
-default_str <- "We have to have a serious discussion about the"
+default_str <- "I woke up and"
+library(markdown)
 
 ui <- fluidPage(theme = shinythemes::shinytheme("journal"),
+                
       #shinythemes::themeSelector(),
       titlePanel("Text prediction with R"),
       tabsetPanel(
@@ -40,7 +42,7 @@ ui <- fluidPage(theme = shinythemes::shinytheme("journal"),
                         column(1),
                         column(6,
                         actionButton("rs_button", label = "Predict Sentence"),
-                        selectInput("nwords", "Number of new words:", 1:30, 20)
+                        selectInput("nwords", "Number of new words:", 1:30, 8)
                         )),
                   br(),
                   fluidRow(column(8,
