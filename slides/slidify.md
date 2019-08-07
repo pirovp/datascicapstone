@@ -15,11 +15,7 @@ knit        : slidify::knit2slides
 }
 </style>
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(fig.width=20, fig.height=4)
-library(ggplot2)
-```
+
 
 # Text prediction with R
 
@@ -42,7 +38,8 @@ This app constitutes the final project in Coursera Data Science specialization c
 The models are implemented as `langmodel` S4 objects, with implemented methods `predict`, `perplexity` and `tokenProbability`. The framework is in principle extendible to new language models. There are dependencies to the packages `quanteda`, `dplyr` and `purrr`.
 
 --- .small-code
-``` {r, eval=FALSE}
+
+```r
 setClass(
       "langmodel",
       representation(
@@ -55,7 +52,6 @@ setClass(
             parameters = "list"
       )
 )
-
 ```
 ---
 
