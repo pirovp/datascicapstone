@@ -1,0 +1,103 @@
+---
+title: "Documentation"
+author: "Paolo Pirovano"
+date: "4 August 2019"
+output:
+      html_document:
+            keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This app constitutes the final project in Coursera Data Science specialization capstone. Its functionality is similar to that of smartphone keyboards, i.e. predicting the next word in a sentence based on the previous input. It works exclusively in the English language. The language model was trained on a publicly available dataset, consisting of news articles, blog entries and twitter feeds, collected by a web crawler. An exploratory data analysis report is available at http://rpubs.com/pyrop/dsc_eda. An approximate metric for the performance of the model can also be displayed, together with the predictions.
+
+
+# Language models
+
+For this application, language models based on back-off algorithms were explored, with varying choices of training data size, length of n-grams considered, etc. Interpolation models (assigning different weights to n, n-1, n-2 grams) were also examined but proved to be too computationally expensive in training phase.
+
+### Training and test
+The models were trained on subsamples of the full available data. The nature of the models is such that size, accuracy and training time both increase with increasing the size of the training sample.
+
+### Metrics
+The best model was selected as the best compromise in terms of *accuracy/perplexity*, *size* and *computational cost* both at training and prediction stages. 
+The performance of the models was evaluated by computing perplexity on a spearate test set, sampled from the same dataset. Finally, perplexity was computed on a validation set for the chosen model. Perplexity was a monotone function of accuracy, so either would indicate the same better model in a comparison. Perplexity is displayed as it yields bigger numbers and a more clear discrimination between models.
+The model used in the app is a simple 4-gram model implementing the Katz's back-off algorithm, trained on 300000 lines of text data.
+
+
+# Implementation
+The models are implemented as `langmodel` S4 objects, with implemented methods `predict`, `perplexity` and `tokenProbability`. The framework is in principle extendible to new language models. There are dependencies to the packages `quanteda`, `dplyr` and `purrr`.
+
+### `langmodel` Class
+
+``` {r, eval=FALSE}
+setClass(
+      "langmodel",
+      representation(
+            prob_list = "list",
+            max_n = "numeric",
+            unk_prob = "numeric",
+            cond_probs = "data.frame",
+            evalProbability = "function",
+            predictProbability = "function",
+            parameters = "list"
+      )
+)
+
+```
+
+`prob_list`: probabilities of n-grams computed from training data
+
+`max_n`: maximum length of n-gram
+
+`unk_prob`: default probabilities assigned to unobserved n-grams
+
+`cond_probs`: probabilities of n-grams, conditional on n-1 grams
+
+`evalProbability`: function that computes probability of given word in a sentence, model dependent
+
+`predictProbability`: function that computes probability of predicted words, model dependent
+
+`parameters`: other parameters that might be used by the model
+
+### `predict`
+``` {r, eval=FALSE}
+predict(object, sentence="")
+
+```
+returns a data frame, with the ten most likely words to appear next according to the model, ranked by probability.
+Arguments:
+
+`object`: the language model
+
+`sentence`: string, input sentence to evaulate
+
+### `tokenProbability`
+``` {r, eval=FALSE}
+predict(object, sentence="", position=1L)
+
+```
+returns a numeric value, the probability of the `position`th token in the input sentence.
+
+Arguments:
+
+`object`: the language model
+
+`sentence`: string, input sentence to evaulate
+
+`position`: integer, position of word to evaluate
+
+### `perplexity`
+``` {r, eval=FALSE}
+perplexity(object, sentence="")
+
+```
+returns a numeric, the per-word perplexity of the input sequence according to the model (nth square of the product of reciprocal probablities, https://en.wikipedia.org/wiki/Perplexity).
+
+Arguments:
+
+`object`: the language model
+
+`sentence`: string, input sentence to evaulate

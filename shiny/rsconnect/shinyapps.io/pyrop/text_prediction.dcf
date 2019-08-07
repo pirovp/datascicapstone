@@ -1,0 +1,12 @@
+name: text_prediction
+title: text_prediction
+username:
+account: pyrop
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1070297
+bundleId: 2294926
+url: https://pyrop.shinyapps.io/text_prediction/
+when: 1565098544.69335
+asMultiple: FALSE
+asStatic: FALSE
