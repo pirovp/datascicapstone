@@ -77,7 +77,7 @@ Arguments:
 
 ### `tokenProbability`
 ``` {r, eval=FALSE}
-predict(object, sentence="", position=1L)
+tokenProbability(object, sentence="", position=1L)
 
 ```
 returns a numeric value, the probability of the `position`th token in the input sentence.
